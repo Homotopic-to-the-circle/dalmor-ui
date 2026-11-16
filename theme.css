@@ -1,0 +1,88 @@
+/* ==========================================================================
+   Dal-Mor UI — thème commun de toutes les apps (MJ, Fiches, Sonerezh, Portail)
+   https://homotopic-to-the-circle.github.io/dalmor-ui/theme.css
+
+   Deux thèmes, mêmes noms de variables :
+     html[data-theme="jour"]  parchemin, encre, lie-de-vin   (MJ / Fiches)
+     html[data-theme="nuit"]  bleu nuit, or                  (Sonerezh)
+   L'attribut est posé par theme.js (à charger AVANT ce fichier, dans <head>).
+
+   RÈGLE : dans les apps, aucune couleur en dur. Toujours var(--…) ci-dessous.
+   Une teinte transparente = color-mix(in srgb, var(--accent) 20%, transparent).
+   Voir README.md pour la liste et l'usage de chaque variable.
+   ========================================================================== */
+
+@font-face{font-family:"IM Fell English SC";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/im-fell-english-sc-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Alegreya";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/alegreya-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Alegreya";font-style:italic;font-weight:400;font-display:swap;src:url(fonts/alegreya-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:"Alegreya";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/alegreya-latin-700-normal.woff2) format("woff2")}
+
+/* ---------- JOUR (défaut) ---------- */
+html[data-theme="jour"]{
+  /* surfaces */
+  --bg:#efe2c2;            /* fond de page */
+  --bg2:#e7d6ae;           /* fond enfoncé (champs dans un panneau, rail de curseur) */
+  --card:#f6ecd4;          /* cartes, cadres, panneaux */
+  --card2:#fbf4e4;         /* carte surélevée / sélectionnée */
+  --page-bg:radial-gradient(ellipse at 50% -20%,#f8efda 0%,#efe2c2 60%);
+  --bar-bg:color-mix(in srgb,#efe2c2 92%,transparent); /* barres collantes */
+  --tile-a:#fbf4e4;--tile-b:#f3e6c9;          /* dégradé des tuiles / pads */
+  --tile-on-a:#fbf4e4;--tile-on-b:#f6e3d0;    /* tuile active */
+  /* encre */
+  --fg:#2a1c12;--muted:#6e5a44;--faint:#9c8565;
+  /* accent = titres, filets, boutons, liens */
+  --accent:#7a1c12;--accent-hi:#7a1c12;--accent-soft:#ecd3b8;--on-accent:#fbf4e4;
+  --line:#cdb68c;          /* bordures */
+  /* états */
+  --danger:#7a1c12;--danger-soft:#ecd3b8;
+  --conc:#3f5226;--conc-soft:#dfe3c4;
+  --warn:#6a4a10;--warn-soft:#f1dfae;
+  --ok:#3d6b2f;
+  /* effets */
+  --ombre:42,28,18;        /* rgba(var(--ombre),.3) pour les ombres portées */
+  --card-sh:0 1px 0 rgba(255,255,255,.6) inset,0 1px 3px rgba(80,50,20,.12);
+  --glow:rgba(122,28,18,.18);
+  --scrim:rgba(42,28,18,.45);
+  color-scheme:light;
+}
+
+/* ---------- NUIT ---------- */
+html[data-theme="nuit"]{
+  --bg:#070d1c;--bg2:#0a1224;--card:#0e1830;--card2:#132042;
+  --page-bg:radial-gradient(ellipse at 50% -20%,#14234a 0%,#070d1c 60%);
+  --bar-bg:rgba(7,13,28,.85);
+  --tile-a:#16244a;--tile-b:#0f1a36;
+  --tile-on-a:#1a2a52;--tile-on-b:#132042;
+  --fg:#ece3cc;--muted:#8a93a9;--faint:#5b6479;
+  --accent:#cfa955;--accent-hi:#ecd08a;--accent-soft:rgba(207,169,85,.14);--on-accent:#0a1224;
+  --line:rgba(207,169,85,.38);
+  --danger:#d06a58;--danger-soft:rgba(208,106,88,.16);
+  --conc:#9cc27a;--conc-soft:rgba(156,194,122,.16);
+  --warn:#e2b75e;--warn-soft:rgba(226,183,94,.16);
+  --ok:#9cc27a;
+  --ombre:0,0,0;
+  --card-sh:inset 0 0 0 3px var(--card),inset 0 0 0 4px rgba(207,169,85,.16);
+  --glow:rgba(236,208,138,.18);
+  --scrim:rgba(3,6,14,.72);
+  color-scheme:dark;
+}
+
+/* polices : identiques partout */
+:root{
+  --disp:"IM Fell English SC",Georgia,"Times New Roman",serif;  /* titres, boutons */
+  --body:"Alegreya",Georgia,"Times New Roman",serif;            /* texte */
+}
+
+/* bascule douce : theme.js pose .dalmor-bascule pendant 400 ms */
+html.dalmor-bascule,html.dalmor-bascule *,html.dalmor-bascule *::before,html.dalmor-bascule *::after{
+  transition:background-color .35s ease,color .35s ease,border-color .35s ease,box-shadow .35s ease,fill .35s ease,stroke .35s ease!important}
+
+/* bouton de thème : <button data-dalmor-theme>Thème</button>  (libellé ajouté)
+                     <button data-dalmor-theme="ico"></button>  (icône seule) */
+[data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : jour"}
+html[data-theme-choix="nuit"] [data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : nuit"}
+html[data-theme-choix="heure"] [data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : selon l’heure"}
+html:not([data-theme-choix]) [data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : par défaut"}
+[data-dalmor-theme="ico"]::after{content:"☾"}
+html[data-theme="nuit"] [data-dalmor-theme="ico"]::after{content:"☀"}
+html[data-theme-choix="heure"] [data-dalmor-theme="ico"]::after{content:"◐"}

@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "Portail MJ",
+  "version": "1.5.0",
+  "description": "Navigation tactile entre les apps D&D (MJ, Sonerezh, Fiches, AideDD) + recherche AideDD 5.5.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "unlimitedStorage",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "icons.js",
+        "dock.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://www.aidedd.org/*",
+        "https://aidedd.org/*"
+      ],
+      "js": [
+        "frame.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ],
+  "chrome_url_overrides": {
+    "newtab": "hub.html"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Portail MJ"
+  },
+  "commands": {
+    "switch-last": {
+      "suggested_key": {
+        "default": "Alt+Q"
+      },
+      "description": "Revenir à l'onglet précédent"
+    }
+  },
+  "icons": {
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "aidedd_iframe",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

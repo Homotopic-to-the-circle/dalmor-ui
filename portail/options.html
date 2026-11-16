@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Réglages — Portail</title>
+<link rel="icon" href="icons/48.png">
+<style>
+@font-face{font-family:"PMJ Fell";src:url(fonts/im-fell-english-sc-latin-400-normal.woff2)}
+@font-face{font-family:"PMJ Alegreya";src:url(fonts/alegreya-latin-400-normal.woff2)}
+@font-face{font-family:"PMJ Alegreya";font-style:italic;src:url(fonts/alegreya-latin-400-italic.woff2)}
+@font-face{font-family:"PMJ Alegreya";font-weight:700;src:url(fonts/alegreya-latin-700-normal.woff2)}
+:root{--disp:"PMJ Fell",Georgia,serif;--body:"PMJ Alegreya",Georgia,serif}
+body.nuit{--bg:#070d1c;--bg2:#0a1224;--card:#0e1830;--card2:#132042;--fg:#ece3cc;--muted:#8a93a9;--faint:#5b6479;
+  --gold:#cfa955;--gold-hi:#ecd08a;--gold-dim:rgba(207,169,85,.38);--gold-soft:rgba(207,169,85,.12);--rule:rgba(207,169,85,.18);--red:#d06a58;--on-acc:#0a1224;
+  --grad:radial-gradient(ellipse at 50% -20%,#14234a 0%,#070d1c 60%);--filet:linear-gradient(90deg,var(--gold) 0%,var(--gold) 55%,transparent 100%);
+  --cadre-sh:inset 0 0 0 3px var(--card),inset 0 0 0 4px rgba(207,169,85,.16);color-scheme:dark}
+body.jour{--bg:#efe2c2;--bg2:#fbf4e4;--card:#f6ecd4;--card2:#fbf4e4;--fg:#2a1c12;--muted:#6e5a44;--faint:#9c8565;
+  --gold:#7a1c12;--gold-hi:#7a1c12;--gold-dim:#cdb68c;--gold-soft:rgba(122,28,18,.08);--rule:rgba(122,28,18,.14);--red:#7a1c12;--on-acc:#fbf4e4;
+  --grad:radial-gradient(ellipse at 50% -20%,#f8efda 0%,#efe2c2 60%);--filet:var(--gold);
+  --cadre-sh:0 1px 0 rgba(255,255,255,.6) inset,0 1px 3px rgba(80,50,20,.12);color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg) var(--grad) fixed;color:var(--fg);font:17px/1.4 var(--body);padding:22px}
+main{max-width:980px;margin:auto}
+header{position:sticky;top:0;z-index:4;background:var(--bg);display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px;border-bottom:1px solid var(--gold-dim);margin-bottom:8px}
+h1,h2{font-family:var(--disp);font-weight:400;margin:0;color:var(--gold-hi)}
+h1{font-size:2rem;letter-spacing:.04em}
+header small{font-family:var(--disp);color:var(--muted);letter-spacing:.08em;margin-bottom:5px}
+h2{font-size:1.35rem;letter-spacing:.03em;padding-bottom:5px;position:relative;margin:28px 0 12px}
+h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--filet)}
+.cadre{background:var(--card);border:1px solid var(--gold-dim);border-radius:4px;box-shadow:var(--cadre-sh);padding:10px 14px}
+.aide{color:var(--muted);font-style:italic;margin:6px 0 12px}
+.app{display:grid;grid-template-columns:auto 150px 1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--rule)}
+.app:last-child{border-bottom:0}
+.app .more{grid-column:2/-1;display:flex;gap:10px;align-items:center}
+input[type=text]{width:100%;min-height:44px;background:var(--bg2);color:var(--fg);border:1px solid var(--gold-dim);border-radius:3px;padding:0 10px;font:inherit}
+input[type=text]::placeholder{color:var(--faint);font-style:italic}
+input:focus{outline:none;border-color:var(--gold)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;background:transparent;border:1px solid var(--gold-dim);border-radius:3px;color:var(--gold-hi);font-family:var(--disp);font-size:1rem;cursor:pointer}
+.btn:active{background:var(--gold-soft)}
+.btn.plein{background:var(--gold);border-color:var(--gold);color:var(--on-acc)}
+.btn.rouge{border-color:var(--red);color:var(--red)}
+.btn.ico{width:44px;padding:0}
+.btn svg,.ic-btn svg{width:24px;height:24px}
+.ic-btn{width:52px;height:52px;display:grid;place-items:center;color:var(--gold);background:var(--bg2);border:1px solid var(--gold-dim);border-radius:3px;cursor:pointer;position:relative}
+.picker{position:absolute;top:56px;left:0;z-index:5;display:none;grid-template-columns:repeat(6,46px);gap:6px;padding:8px;background:var(--card2);border:1px solid var(--gold);border-radius:4px}
+.picker.on{display:grid}
+.picker button{width:46px;height:46px;display:grid;place-items:center;color:var(--gold);background:transparent;border:1px solid transparent;border-radius:3px;cursor:pointer}
+.picker button:hover,.picker button.on{border-color:var(--gold-dim);background:var(--gold-soft)}
+label.ck{display:flex;gap:12px;align-items:flex-start;padding:10px 0;cursor:pointer}
+label.ck input{width:22px;height:22px;accent-color:var(--gold);margin-top:2px;flex:none}
+.seg{flex:none;display:inline-flex;border:1px solid var(--gold-dim);border-radius:3px;overflow:hidden}
+.seg button{min-height:42px;padding:0 16px;background:transparent;border:0;color:var(--fg);font-family:var(--disp);font-size:1rem;cursor:pointer}
+.seg button.on{background:var(--gold);color:var(--on-acc)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#msg{color:var(--gold);font-style:italic}
+.small{font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body class="jour">
+<main>
+  <header><h1>Portail</h1><small>RÉGLAGES</small><span style="flex:1"></span>
+    <button class="btn" id="quit" title="Fermer sans enregistrer">Fermer</button>
+    <button class="btn plein" id="saveQuit">Enregistrer et fermer</button></header>
+
+  <h2>Apps</h2>
+  <p class="aide">Un bouton par app. « Protégée » demande un second toucher avant de fermer l'onglet (Sonerezh : ça couperait le son).</p>
+  <div class="cadre" id="apps"></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="add">+ Ajouter une app</button></div>
+
+  <h2>AideDD</h2>
+  <div class="cadre">
+    <label class="ck"><input type="checkbox" id="panel"><span>Ouvrir AideDD <b>dans un panneau à côté de l'app</b> (fiches de monstres, sorts, résultats de recherche).<br><span class="small">La largeur se règle en glissant la poignée dorée du panneau.</span></span></label>
+    <label class="ck"><input type="checkbox" id="reuse"><span>Sinon, n'utiliser <b>qu'un seul onglet AideDD</b> au lieu d'en empiler.</span></label>
+  </div>
+
+  <h2>Thème</h2>
+  <p class="aide">Toutes les apps partagent <b>un seul thème</b> (Dal-Mor UI) : le changer dans une app (bouton « Thème » de MJ / Fiches, ☾ de Sonerezh, ou lune / soleil du sceau) change toutes les autres, onglets ouverts compris. Ordre : jour → nuit → selon l'heure (nuit de 19 h à 7 h).</p>
+  <div class="cadre row"><span>Accueil</span><div class="seg" id="hubTheme"><button data-v="commun">Comme les apps</button><button data-v="jour">Jour</button><button data-v="nuit">Nuit</button><button data-v="heure">Selon l'heure</button></div></div>
+
+  <h2>Sceau flottant</h2>
+  <div class="cadre row"><span>Côté de l'écran</span><div class="seg" id="side"><button data-v="left">Gauche</button><button data-v="right">Droite</button></div></div>
+
+  <div class="row" style="margin-top:22px"><button class="btn plein" id="save">Enregistrer</button><button class="btn" id="reset">Valeurs par défaut</button><span id="msg"></span></div>
+
+  <h2>Index de recherche</h2>
+  <div class="cadre"><p id="idx" class="aide" style="margin:4px 0 10px">…</p><button class="btn" id="rebuild">Reconstruire l'index</button></div>
+</main>
+<script src="icons.js"></script>
+<script src="options.js"></script>
+<script src="dock.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#efe2c2">
+<script src="theme.js"></script>
+<link rel="stylesheet" href="theme.css">
+<title>Dal-Mor UI</title>
+<style>
+body{margin:0;background:var(--bg) var(--page-bg) fixed;color:var(--fg);font:17px/1.4 var(--body)}
+main{max-width:900px;margin:0 auto;padding:24px 20px 48px;display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:var(--disp);font-weight:400;color:var(--accent);margin:0}
+h1{font-size:2.4rem}
+h2{font-size:1.3rem;padding-bottom:4px;border-bottom:2px solid var(--accent)}
+p{margin:0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px;box-shadow:var(--card-sh)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-family:var(--disp);color:var(--accent);background:transparent;border:1px solid var(--accent);border-radius:3px;padding:8px 14px;cursor:pointer}
+button.pri{background:var(--accent);color:var(--on-accent)}
+.nu{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.nu div{border:1px solid var(--line);border-radius:4px;overflow:hidden;font-size:.85rem}
+.nu i{display:block;height:46px}
+.nu span{display:block;padding:4px 8px;color:var(--muted)}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Dal-Mor UI</h1>
+  <p>Thème commun des apps MJ, Fiches et Sonerezh. Le choix est partagé par toutes les apps de cet appareil.</p>
+  <div class="row"><button class="pri" data-dalmor-theme>Thème</button><button data-dalmor-theme="ico"></button></div>
+  <h2>Couleurs</h2>
+  <div class="nu" id="nu"></div>
+  <h2>Exemple</h2>
+  <div class="card"><p>Carte, texte secondaire, <a href="#">lien</a>.</p><div class="row" style="margin-top:10px"><button>Bouton</button><button class="pri">Principal</button></div></div>
+  <p>Documentation : <a href="https://github.com/Homotopic-to-the-circle/dalmor-ui">github.com/Homotopic-to-the-circle/dalmor-ui</a></p>
+</main>
+<script>
+document.getElementById('nu').innerHTML=['bg','bg2','card','card2','fg','muted','faint','accent','accent-hi','accent-soft','line','danger','conc','warn','ok']
+  .map(function(v){return '<div><i style="background:var(--'+v+')"></i><span>--'+v+'</span></div>'}).join('');
+</script>
+</body>
+</html>
