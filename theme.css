@@ -76,13 +76,3 @@ html[data-theme="nuit"]{
 /* bascule douce : theme.js pose .dalmor-bascule pendant 400 ms */
 html.dalmor-bascule,html.dalmor-bascule *,html.dalmor-bascule *::before,html.dalmor-bascule *::after{
   transition:background-color .35s ease,color .35s ease,border-color .35s ease,box-shadow .35s ease,fill .35s ease,stroke .35s ease!important}
-
-/* bouton de thème : <button data-dalmor-theme>Thème</button>  (libellé ajouté)
-                     <button data-dalmor-theme="ico"></button>  (icône seule) */
-[data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : jour"}
-html[data-theme-choix="nuit"] [data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : nuit"}
-html[data-theme-choix="heure"] [data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : selon l’heure"}
-html:not([data-theme-choix]) [data-dalmor-theme]:not([data-dalmor-theme="ico"])::after{content:" : par défaut"}
-[data-dalmor-theme="ico"]::after{content:"☾"}
-html[data-theme="nuit"] [data-dalmor-theme="ico"]::after{content:"☀"}
-html[data-theme-choix="heure"] [data-dalmor-theme="ico"]::after{content:"◐"}

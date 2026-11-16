@@ -31,8 +31,7 @@
   async function refresh() {
     S = await send({ type: 'state' });
     if (!S || S.error) return;
-    const ht = S.cfg.hubTheme || 'commun';
-    setTheme(ht === 'commun' ? (S.cfg.sharedTheme || 'jour') : ht);
+    setTheme(S.cfg.hubTheme === 'nuit' ? 'nuit' : 'jour');
     $('b-fs').classList.toggle('on', !!S.fullscreen);
     $('apps').innerHTML = S.apps.map((a, i) => {
       const tab = S.tabs.find((t) => t.app === a.name);
@@ -66,6 +65,7 @@
     if (b.dataset.a === 'options') return send({ type: 'options' });
   });
 
+  window.addEventListener('portail-hub-theme', (e) => setTheme(e.detail)); // bouton lune / soleil du d20
   clock(); setInterval(clock, 15000);
   refresh(); setInterval(() => { if (!document.hidden) refresh(); }, 2500);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });

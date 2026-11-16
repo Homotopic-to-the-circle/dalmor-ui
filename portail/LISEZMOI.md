@@ -1,9 +1,9 @@
-# Portail MJ — extension Chromium (v1.5)
+# Portail MJ — extension Chromium (v1.4)
 
 Mise à jour depuis une version précédente : remplacer le contenu du dossier, puis `chrome://extensions` → ↻ sur Portail MJ, et recharger les onglets ouverts.
 
 ## Installation (une fois)
-1. Récupérer le dossier `portail/` de ce dépôt (ou le zip envoyé) et le garder quelque part dans ton home (ex. `~/DnD/portail-mj`) — ne pas le supprimer ensuite.
+1. Dézipper le dossier `portail-mj` quelque part dans ton home (ex. `~/DnD/portail-mj`) — ne pas le supprimer ensuite.
 2. Chromium → `chrome://extensions` → activer **Mode développeur** (en haut à droite).
 3. **Charger l'extension non empaquetée** → choisir le dossier `portail-mj`.
 4. Au premier « nouvel onglet », Chromium demande si tu gardes la page de l'extension → **Conserver**.
@@ -22,9 +22,9 @@ Mise à jour depuis une version précédente : remplacer le contenu du dossier, 
 - Raccourci clavier : `Alt+Q` = onglet précédent.
 
 ## Thème jour / nuit
-- Le portail suit le **thème commun Dal-Mor** (dépôt `dalmor-ui`) : mêmes couleurs que les apps.
-- Bouton lune / soleil du panneau du sceau = même réglage que le bouton « Thème » de MJ / Fiches et ☾ de Sonerezh. Ordre : jour → nuit → selon l'heure. Tous les onglets suivent.
-- Accueil : « Comme les apps » par défaut (Réglages → Thème).
+- Bouton **lune / soleil** du panneau du d20 : bascule **la page ouverte** (l'app et le panneau du d20), sans toucher aux autres apps. C'est le seul endroit où changer le thème.
+- Les onglets d'une même app suivent. Le choix est gardé (par app, sur cet ordinateur).
+- Sur l'accueil et les réglages du portail : change leur thème. Sur AideDD ou un autre site : change seulement le panneau du d20.
 
 ## Limites
 - Le dé n'apparaît pas sur les pages internes (`chrome://…`), le Chrome Web Store et le **lecteur PDF** intégré de Chromium. Sur ces pages : `Alt+Q` pour revenir à l'onglet précédent.

@@ -1,22 +1,21 @@
 # Dal-Mor UI
 
-Thème commun de toutes les apps de la campagne Dal-Mor : **un seul fichier de couleurs, deux thèmes (jour / nuit), mêmes polices partout.**
+Thème commun de toutes les apps de la campagne Dal-Mor : **un seul fichier de couleurs, deux thèmes (jour / nuit), mêmes polices partout** — chaque app choisit son thème, depuis le d20 du Portail.
 
 | App | Dépôt | Thème par défaut |
 |---|---|---|
 | MJ | [DnD_MJ](https://github.com/Homotopic-to-the-circle/DnD_MJ) | jour |
 | Fiches (joueurs) | [DnD_Character](https://github.com/Homotopic-to-the-circle/DnD_Character) | jour |
 | Sonerezh (son) | [Sonerezh](https://github.com/Homotopic-to-the-circle/Sonerezh) | nuit |
-| Portail (extension Chromium) | [`portail/`](portail/) dans ce dépôt | suit les apps |
+| Portail (extension Chromium) | [`portail/`](portail/) dans ce dépôt | suit la page ouverte |
 
 Page de démonstration : https://homotopic-to-the-circle.github.io/dalmor-ui/
 
 ## Comment ça marche
 
-- Toutes les apps sont servies par GitHub Pages sur **la même origine** (`homotopic-to-the-circle.github.io`). Elles partagent donc le même `localStorage`.
-- Le choix du thème est rangé dans `localStorage['dalmor-theme']` : `jour`, `nuit` ou `heure` (nuit de 19 h à 7 h). **Changer dans une app change toutes les autres**, onglets déjà ouverts compris (événement `storage`).
-- Chaque appareil garde son propre choix (le téléphone d'un joueur n'est pas lié à l'ordinateur du MJ).
-- Sans choix enregistré, chaque app garde son thème par défaut (`<html data-theme-defaut="nuit">` pour Sonerezh, jour sinon).
+- **Chaque app a son propre thème**, rangé dans `localStorage['dalmor-theme:<app>']` (`<app>` = 1er segment du chemin : `DnD_MJ`, `DnD_Character`, `Sonerezh`). Valeurs : `jour`, `nuit` (ou `heure`, nuit de 19 h à 7 h, via l'API). Changer une app ne touche pas les autres ; les onglets d'une même app suivent.
+- **Le thème se change uniquement depuis le d20 flottant du Portail** (bouton lune / soleil de son panneau). Il change la page ouverte **et** le panneau du d20. **Aucun bouton de thème dans les apps** : ne pas en ajouter.
+- Sans choix enregistré, chaque app garde son thème par défaut (`<html data-theme-defaut="nuit">` pour Sonerezh, jour sinon). Sur les téléphones des joueurs (sans Portail), Fiches reste donc en jour.
 - `theme.js` pose `<html data-theme="jour|nuit">` (thème affiché) et `data-theme-choix` (choix brut) ; `theme.css` définit les variables pour chaque valeur.
 
 ## Intégrer une app
@@ -29,16 +28,7 @@ Dans `<head>`, **avant** les styles de l'app, sans `defer` (évite le flash de l
 <link rel="stylesheet" href="/dalmor-ui/theme.css">
 ```
 
-Puis un bouton de thème, n'importe où :
-
-```html
-<button data-dalmor-theme>Thème</button>          <!-- affiche « Thème : jour / nuit / selon l’heure » -->
-<button data-dalmor-theme="ico"></button>         <!-- icône seule ☾ / ☀ / ◐ -->
-```
-
-Aucun JavaScript à écrire : `theme.js` gère le clic (jour → nuit → selon l'heure). Ne pas mettre d'attribut `data-a` / `data-act` dessus.
-
-API si besoin : `Dalmor.theme.get()`, `Dalmor.theme.set('nuit')`, `Dalmor.theme.suivant()`, `Dalmor.theme.effectif()` ; événement `window` `dalmor-theme` (detail = `jour` | `nuit`) à chaque changement.
+C'est tout : pas de bouton à ajouter. API si besoin : `Dalmor.theme.get()`, `Dalmor.theme.set('nuit')`, `Dalmor.theme.effectif()`, `Dalmor.theme.cle` ; événement `window` `dalmor-theme` (detail = `jour` | `nuit`) à chaque changement ; le Portail envoie `dalmor-theme-sync` après avoir écrit la clé.
 
 ## Règles (à respecter dans toutes les apps)
 
@@ -88,4 +78,4 @@ Les apps ont un service worker qui garde une copie des fichiers de la même orig
 
 ## Portail (extension Chromium)
 
-Source dans [`portail/`](portail/) (installation : `portail/LISEZMOI.md`). Le sceau flottant lit `data-theme` de la page ; son bouton lune / soleil écrit le même `localStorage['dalmor-theme']` puis envoie l'événement `dalmor-theme-sync` à `theme.js`.
+Source dans [`portail/`](portail/) (installation : `portail/LISEZMOI.md`). Le d20 flottant lit `data-theme` de la page ; son bouton lune / soleil écrit `localStorage['dalmor-theme:<app>']` de l'app ouverte puis envoie `dalmor-theme-sync` à `theme.js`. Sur l'accueil du portail il change `hubTheme`, sur un autre site (AideDD) seulement le panneau du d20.

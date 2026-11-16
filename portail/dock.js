@@ -214,7 +214,7 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
         <button class="btn" data-a="last" title="Onglet précédent">${I('last')}</button>
         ${HUB ? '' : `<button class="btn" data-a="home" title="Accueil">${I('home')}</button>`}
         <button class="btn" data-a="fs" title="Plein écran">${I('fs')}</button>
-        <button class="btn" data-a="theme" title="Jour / nuit (thème commun des apps)">${I('lune')}</button>
+        <button class="btn" data-a="theme" title="Jour / nuit pour cette page">${I('lune')}</button>
       </div>
       <h2>Apps</h2>
       <div class="apps"></div>
@@ -276,42 +276,43 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
     }
     return matchMedia('(prefers-color-scheme: dark)').matches;
   }
-  // Thème commun Dal-Mor : dans une app Dal-Mor, on lit <html data-theme> posé par dalmor-ui/theme.js ;
-  // ailleurs (accueil, AideDD…), on suit le dernier choix connu, recopié dans CFG.sharedTheme.
-  const LSK = 'dalmor-theme';
-  const ORDRE = ['jour', 'nuit', 'heure'];
+  // Thème jour / nuit de LA PAGE OUVERTE, changé uniquement depuis le d20 (bouton lune / soleil) :
+  //  - app Dal-Mor : localStorage['dalmor-theme:<app>'] lu par dalmor-ui/theme.js (pose <html data-theme>)
+  //  - accueil / réglages du portail : CFG.hubTheme
+  //  - autre site (AideDD…) : CFG.siteThemes[hôte] (seulement le panneau du d20)
   const isDalmorPage = () => document.documentElement.hasAttribute('data-theme') && /github\.io$|^localhost$/.test(location.hostname);
+  const isExtPage = () => location.protocol === 'chrome-extension:';
+  const dalmorKey = () => 'dalmor-theme:' + (location.pathname.split('/')[1] || 'racine');
   const effectif = (c) => {
     if (c === 'heure') { const h = new Date().getHours(); return h >= 19 || h < 7 ? 'nuit' : 'jour'; }
     return c === 'nuit' ? 'nuit' : 'jour';
   };
-  function choixActuel() {
-    if (isDalmorPage()) { try { const v = localStorage.getItem(LSK); if (ORDRE.includes(v)) return v; } catch (e) {} return null; }
-    return ORDRE.includes(CFG.sharedTheme) ? CFG.sharedTheme : null;
-  }
   function pickTheme() {
     let t;
-    if (isDalmorPage()) {
-      t = document.documentElement.getAttribute('data-theme') === 'nuit' ? 'nuit' : 'jour';
-      const c = choixActuel();
-      if (c && c !== CFG.sharedTheme) { CFG.sharedTheme = c; send({ type: 'saveCfg', patch: { sharedTheme: c } }); }
-    } else if (CFG.sharedTheme) t = effectif(CFG.sharedTheme);
+    if (isDalmorPage()) t = document.documentElement.getAttribute('data-theme') === 'nuit' ? 'nuit' : 'jour';
+    else if (isExtPage()) t = effectif(CFG.hubTheme || 'jour');
+    else if (CFG.siteThemes && CFG.siteThemes[location.hostname]) t = effectif(CFG.siteThemes[location.hostname]);
     else t = pageIsDark() ? 'nuit' : 'jour';
     wrap.classList.toggle('jour', t === 'jour'); wrap.classList.toggle('nuit', t === 'nuit');
     updThemeBtn();
   }
   function updThemeBtn() {
     const b = root.querySelector('[data-a="theme"]'); if (!b) return;
-    const nuit = wrap.classList.contains('nuit'), c = choixActuel();
-    b.innerHTML = I(c === 'heure' ? 'horloge' : nuit ? 'soleil' : 'lune');
-    b.title = c === 'heure' ? 'Thème : selon l’heure (toucher : jour)' : nuit ? 'Thème : nuit (toucher : selon l’heure)' : 'Thème : jour (toucher : nuit)';
+    const nuit = wrap.classList.contains('nuit');
+    b.innerHTML = I(nuit ? 'soleil' : 'lune');
+    b.title = nuit ? 'Passer cette page en jour' : 'Passer cette page en nuit';
   }
-  // appliquer un choix dans cette page (si c'est une app Dal-Mor : stockage commun + theme.js)
-  function appliquerChoix(v) {
-    CFG.sharedTheme = v;
+  function basculerTheme() {
+    const v = wrap.classList.contains('nuit') ? 'jour' : 'nuit';
     if (isDalmorPage()) {
-      try { localStorage.setItem(LSK, v); } catch (e) {}
-      window.dispatchEvent(new Event('dalmor-theme-sync'));
+      try { localStorage.setItem(dalmorKey(), v); } catch (e) {}
+      window.dispatchEvent(new Event('dalmor-theme-sync')); // theme.js repeint l'app, puis 'dalmor-theme' → pickTheme
+    } else if (isExtPage()) {
+      CFG.hubTheme = v; send({ type: 'saveCfg', patch: { hubTheme: v } });
+      window.dispatchEvent(new CustomEvent('portail-hub-theme', { detail: v }));
+    } else {
+      CFG.siteThemes = { ...(CFG.siteThemes || {}), [location.hostname]: v };
+      send({ type: 'saveCfg', patch: { siteThemes: CFG.siteThemes } });
     }
     pickTheme();
   }
@@ -395,12 +396,7 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
         if (!HUB) toggle(false);
         return send({ type: b.dataset.a });
       case 'fs': await send({ type: 'fs' }); return setTimeout(refresh, 300);
-      case 'theme': {
-        const c = choixActuel() || (wrap.classList.contains('nuit') ? 'nuit' : 'jour');
-        const v = ORDRE[(ORDRE.indexOf(c) + 1) % ORDRE.length];
-        appliquerChoix(v);
-        return send({ type: 'setTheme', v }); // le service worker relaie à tous les onglets
-      }
+      case 'theme': return basculerTheme();
       case 'search': return openSearch();
       case 'options': return send({ type: 'options' });
       case 'closeTab':
@@ -481,7 +477,6 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
   }, true);
   // liens ouverts dans un nouvel onglet (window.open…) → renvoyés ici par le service worker
   chrome.runtime.onMessage.addListener((msg, sender, reply) => {
-    if (msg && msg.type === 'dalmorSet') { appliquerChoix(msg.v); reply(true); return; }
     if (msg && msg.type === 'showAidedd') {
       if (!usePanel()) { reply(false); return; }
       openDrawer(msg.url); reply(true);
@@ -571,7 +566,7 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
   window.__portailOpenSearch = openSearch;           // utilisé par la page d'accueil
   window.addEventListener('portail-retheme', pickTheme);
   window.addEventListener('dalmor-theme', () => pickTheme());   // envoyé par dalmor-ui/theme.js
-  window.addEventListener('storage', (e) => { if (e.key === LSK) pickTheme(); });
+  window.addEventListener('storage', (e) => { if (e.key && e.key.startsWith('dalmor-theme')) setTimeout(pickTheme, 0); });
   /* ---------- Init ---------- */
   send({ type: 'getCfg' }).then((c) => c && !c.error && applyCfg(c));
   chrome.storage.onChanged.addListener((ch) => { if (ch.cfg && ch.cfg.newValue) applyCfg(ch.cfg.newValue); });

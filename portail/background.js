@@ -7,8 +7,8 @@ const DEFAULTS = {
     { name: 'Fiches',   icon: 'parchemin', url: GH + 'DnD_Character/', protect: false },
     { name: 'AideDD',   icon: 'livre',     url: 'https://www.aidedd.org/', protect: false }
   ],
-  hubTheme: 'commun',  // accueil : commun (= thème des apps) | jour | nuit | heure
-  sharedTheme: null,   // copie du choix commun Dal-Mor (localStorage 'dalmor-theme' des apps)
+  hubTheme: 'jour',    // thème de l'accueil / des réglages, changé depuis le d20
+  siteThemes: {},      // thème du panneau du d20 sur les autres sites (AideDD…), par hôte
   aideddPanel: true,   // les liens AideDD s'ouvrent dans le panneau latéral, à côté de l'app
   reuseAidedd: true,   // sinon : un seul onglet AideDD, réutilisé
   side: 'right',
@@ -352,14 +352,6 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       case 'hub': return openHub(tab);
       case 'openUrl': return openUrl(msg.url, tab);
       case 'saveCfg': return saveCfg(msg.patch);
-      case 'setTheme': {
-        await saveCfg({ sharedTheme: msg.v });
-        for (const t of await chrome.tabs.query({})) {
-          if (tab && t.id === tab.id) continue;
-          chrome.tabs.sendMessage(t.id, { type: 'dalmorSet', v: msg.v }, { frameId: 0 }).catch?.(() => {});
-        }
-        return true;
-      }
       case 'resetCfg': await chrome.storage.local.remove('cfg'); return getCfg();
       case 'getCfg': return getCfg();
       case 'search': await loadIndex(); maybeRefresh(); return { results: search(msg.q, msg.cat), info: await indexInfo() };

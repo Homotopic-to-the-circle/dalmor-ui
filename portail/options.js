@@ -36,14 +36,8 @@ function row(a = { icon: 'de', name: '', url: 'https://', match: '', protect: fa
 }
 document.addEventListener('click', (e) => { if (!e.target.closest('.ic-btn')) document.querySelectorAll('.picker.on').forEach((p) => p.classList.remove('on')); });
 
-let hubTheme = 'commun', shared = null;
-function setHub(v) {
-  hubTheme = v;
-  document.querySelectorAll('#hubTheme button').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
-  let t = v === 'commun' ? (shared || 'jour') : v; if (t === 'heure') { const h = new Date().getHours(); t = h >= 19 || h < 7 ? 'nuit' : 'jour'; }
-  document.body.className = t;
-}
-document.getElementById('hubTheme').onclick = (e) => { const b = e.target.closest('button'); if (b) setHub(b.dataset.v); };
+
+function setHub(v) { document.body.className = v === 'nuit' ? 'nuit' : 'jour'; } // suit l'accueil (d20)
 function setSide(v) { side = v; document.querySelectorAll('#side button').forEach((b) => b.classList.toggle('on', b.dataset.v === v)); }
 document.getElementById('side').onclick = (e) => { const b = e.target.closest('button'); if (b) setSide(b.dataset.v); };
 
@@ -54,8 +48,7 @@ async function load() {
   document.getElementById('panel').checked = cfg.aideddPanel !== false;
   document.getElementById('reuse').checked = !!cfg.reuseAidedd;
   setSide(cfg.side || 'right');
-  shared = cfg.sharedTheme || null;
-  setHub(cfg.hubTheme || 'commun');
+  setHub(cfg.hubTheme);
   info();
 }
 async function info() {
@@ -75,7 +68,7 @@ async function save() {
     match: el.querySelector('.match').value.trim() || undefined,
     protect: el.querySelector('.pr').checked
   })).filter((a) => a.name && /^https?:\/\//.test(a.url));
-  await send({ type: 'saveCfg', patch: { apps, aideddPanel: document.getElementById('panel').checked, reuseAidedd: document.getElementById('reuse').checked, side, hubTheme } });
+  await send({ type: 'saveCfg', patch: { apps, aideddPanel: document.getElementById('panel').checked, reuseAidedd: document.getElementById('reuse').checked, side } });
   const m = document.getElementById('msg'); m.textContent = 'Enregistré.'; setTimeout(() => (m.textContent = ''), 2000);
 }
 document.getElementById('save').onclick = save;
@@ -89,3 +82,4 @@ document.getElementById('rebuild').onclick = async () => {
   await send({ type: 'buildIndex' }); info();
 };
 load();
+window.addEventListener('portail-hub-theme', (e) => setHub(e.detail));
