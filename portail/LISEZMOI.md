@@ -10,9 +10,6 @@ Mise à jour depuis une version précédente : remplacer le contenu du dossier, 
 5. Paramètres → *Au démarrage* → « Ouvrir la page Nouvel onglet » : Chromium démarre sur le Portail.
 6. Option : lancer en plein écran direct : `chromium --start-fullscreen` (raccourci KDE).
 
-## Nom et logo dans Kubuntu
-Pour que Chromium s'appelle « Portail MJ » avec le logo du sceau (menu, barre des tâches) : voir [`kubuntu/LISEZMOI.md`](kubuntu/LISEZMOI.md) (`./installer.sh`).
-
 ## Usage
 - **Dé doré flottant** (bord de l'écran, sur toutes les pages) :
   - tap → panneau : apps, onglets ouverts, retour/suivant, recharger, plein écran, fermer l'onglet ;
@@ -21,7 +18,13 @@ Pour que Chromium s'appelle « Portail MJ » avec le logo du sceau (menu, barre 
 - **Panneau AideDD** : un lien AideDD (fiche monstre dans l'app MJ, résultat de recherche) s'ouvre dans un panneau à droite, l'app reste visible à gauche. Poignée dorée = largeur ; en-tête : fiche précédente, taille du texte −/+, recherche, ouvrir en onglet, fermer.
 - Si le panneau est désactivé (Réglages) : un seul onglet AideDD, réutilisé.
 - **Sonerezh est protégée** : fermer son onglet demande un 2e tap (ça couperait la musique).
-- **Recherche** : clavier AZERTY tactile intégré, résultats instantanés (sorts, monstres, objets/potions, dons, règles), noms FR ou VO. Dernière ligne = recherche web sur tout aidedd.org.
+- **Recherche** : clavier AZERTY tactile intégré, résultats instantanés, noms FR ou VO :
+  - sorts, monstres, objets / potions, dons (fiches AideDD) ;
+  - **règles 2024** (`/regles-24/`) : chaque titre (états, actions, glossaire, propriétés et bottes d'armes…), les termes en gras (« Abri partiel ») ;
+  - **armes, armures, équipement** : une entrée par ligne de tableau, caractéristiques affichées directement (dégâts, propriétés, botte, prix) ;
+  - **dans le texte** : les paragraphes des règles (ex. « charger » → Chargement).
+  - Le résultat s'ouvre dans le panneau, défilé jusqu'au bon endroit et surligné. La recherche web n'apparaît que si rien n'est trouvé.
+  - Première construction de l'index : ~1 min (environ 100 à 250 pages de règles lues), puis mise à jour toutes les 2 semaines. Détail dans ⚙ Réglages.
 - Raccourci clavier : `Alt+Q` = onglet précédent.
 
 ## Thème jour / nuit

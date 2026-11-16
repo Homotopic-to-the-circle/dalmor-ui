@@ -55,7 +55,7 @@ async function info() {
   const i = await send({ type: 'indexInfo' });
   const d = i.date ? new Date(i.date).toLocaleString('fr') : 'jamais';
   document.getElementById('idx').textContent =
-    `${i.n.toLocaleString('fr')} entrées — sorts, monstres, objets, dons, règles. Dernière mise à jour : ${d}.` +
+    `${i.listes.toLocaleString('fr')} sorts, monstres, objets et dons · ${i.regles.toLocaleString('fr')} entrées de règles 2024 (titres, armes, armures, équipement) lues sur ${i.pages} pages · ${i.textes.toLocaleString('fr')} paragraphes pour la recherche dans le texte. Dernière mise à jour : ${d}.` +
     (i.errors && i.errors.length ? ` Pages en échec : ${i.errors.join(', ')}.` : '');
 }
 

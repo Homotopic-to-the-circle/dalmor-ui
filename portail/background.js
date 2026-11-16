@@ -177,10 +177,12 @@ async function toggleFullscreen(windowId) {
 /* ---------- Index AideDD ---------- */
 const ORIGIN = 'https://www.aidedd.org/';
 const SOURCES = ['spell/', 'spell/fr/', 'monster/', 'monster/fr/', 'magic-item/', 'magic-item/fr/',
-  'feat/', 'feat/fr/', 'regles/', ''];
-const CATS = { spell: 'Sort', monster: 'Monstre', 'magic-item': 'Objet', feat: 'Don', regles: 'Règle' };
+  'feat/', 'feat/fr/', ''];
+const CATS = { spell: 'Sort', monster: 'Monstre', 'magic-item': 'Objet', feat: 'Don' };
+const REGLES = ORIGIN + 'regles-24/'; // règles D&D 2024 (5.5) — pas /regles/ qui est la version 2014
+// catégories de puces → catégories d'entrées
+const GROUPES = { 'Règle': ['Règle', 'Texte'], 'Équipement': ['Arme', 'Armure', 'Équipement'] };
 const FR_RE = /^https?:\/\/(?:www\.)?aidedd\.org\/([a-z0-9-]+)\/fr\/([^\/?#]+)\/?$/i;
-const RULE_RE = /^https?:\/\/(?:www\.)?aidedd\.org\/regles\/([^?#]+?)\/?$/i;
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', rsquo: '’', lsquo: '‘',
   laquo: '«', raquo: '»', eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë', agrave: 'à', acirc: 'â',
   ccedil: 'ç', icirc: 'î', iuml: 'ï', ocirc: 'ô', ugrave: 'ù', ucirc: 'û', uuml: 'ü', oelig: 'œ',
@@ -225,12 +227,6 @@ function parsePage(html, base, map) {
       }
       add(map, { u: l.href, c: CATS[seg] || fromSlug(seg), n: isBadName(l.text) ? '' : l.text, slug, e: en });
     }
-    for (const l of links) {
-      const m = l.href.match(RULE_RE);
-      if (!m) continue;
-      const slug = m[1].split('/').pop();
-      add(map, { u: l.href.replace(/\/?$/, '/'), c: 'Règle', n: isBadName(l.text) ? '' : l.text, slug, e: '' });
-    }
   }
 }
 function add(map, it) {
@@ -241,18 +237,64 @@ function add(map, it) {
   if (!prev.e && it.e) prev.e = it.e;
 }
 
-let INDEX = null; // [{u,c,n,e,k,ke}]
+let INDEX = null;   // sorts, monstres, objets, dons : [{u,c,n,e,k,ke}]
+let RULES = null;   // règles 2024 : titres, termes en gras, lignes de tableaux [{u,c,n,e,p,s,k,ke}]
+let TEXTS = null;   // paragraphes des règles [{t,u,i,k}]
 let building = null;
 async function loadIndex() {
-  if (INDEX) return INDEX;
-  const { idx } = await chrome.storage.local.get('idx');
+  if (INDEX && RULES) return INDEX;
+  const { idx, rulesIdx, rulesTxt } = await chrome.storage.local.get(['idx', 'rulesIdx', 'rulesTxt']);
   INDEX = (idx || []).map(prep);
+  RULES = (rulesIdx || []).map((it) => ({ ...it, k: norm(it.n), ke: norm(it.e) }));
+  TEXTS = (rulesTxt || []).map((x) => ({ ...x, k: norm(x.t) }));
   return INDEX;
 }
 function prep(it) {
   const n = it.n || fromSlug(it.slug || '');
   return { ...it, n, k: norm(n + ' ' + (it.slug || '').replace(/-/g, ' ')), ke: norm(it.e) };
 }
+
+/* Règles 2024 : lues par le document hors écran (offscreen.js), qui a DOMParser. */
+let progres = null; // { faits, total }
+let attenteRegles = null;
+async function offscreenPret() {
+  try {
+    if (chrome.runtime.getContexts) {
+      const c = await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] });
+      if (c.length) return;
+    }
+    await new Promise((ok, ko) => {
+      const fin = (m) => { if (m && m.type === 'offscreenPret') { chrome.runtime.onMessage.removeListener(fin); ok(); } };
+      chrome.runtime.onMessage.addListener(fin);
+      chrome.offscreen.createDocument({ url: 'offscreen.html', reasons: ['DOM_PARSER'], justification: 'Lire les pages de règles AideDD pour la recherche' })
+        .catch((e) => { chrome.runtime.onMessage.removeListener(fin); /\bsingle\b|already/i.test(e.message) ? ok() : ko(e); });
+      setTimeout(ok, 3000);
+    });
+  } catch (e) { throw e; }
+}
+async function buildRules() {
+  await offscreenPret();
+  const id = Date.now();
+  progres = { faits: 0, total: 1 };
+  const res = await new Promise((ok) => {
+    attenteRegles = { id, ok };
+    chrome.runtime.sendMessage({ type: 'reglesParcourir', racine: REGLES, id }).catch(() => {});
+    setTimeout(() => ok(null), 8 * 60 * 1000);
+  });
+  attenteRegles = null; progres = null;
+  try { await chrome.offscreen.closeDocument(); } catch (e) {}
+  if (!res || !res.entrees.length) return { n: 0, pages: res ? res.pages : 0, errors: res ? res.erreurs : ['délai dépassé'] };
+  await chrome.storage.local.set({ rulesIdx: res.entrees, rulesTxt: res.textes, rulesInfo: { pages: res.pages, errors: res.erreurs, date: Date.now() } });
+  RULES = res.entrees.map((it) => ({ ...it, k: norm(it.n), ke: norm(it.e) }));
+  TEXTS = res.textes.map((x) => ({ ...x, k: norm(x.t) }));
+  return { n: res.entrees.length, pages: res.pages, errors: res.erreurs };
+}
+chrome.runtime.onMessage.addListener((m) => {
+  if (!m || !attenteRegles || m.id !== attenteRegles.id) return;
+  if (m.type === 'reglesProgres') progres = { faits: m.faits, total: m.total };
+  if (m.type === 'reglesFini') attenteRegles.ok(m);
+});
+
 async function buildIndex() {
   if (building) return building;
   building = (async () => {
@@ -272,34 +314,69 @@ async function buildIndex() {
     } else {
       await chrome.storage.local.set({ idxErrors: errors });
     }
-    return { n: idx.length, errors };
+    let regles = { n: 0, pages: 0, errors: [] };
+    try { regles = await buildRules(); } catch (e) { regles.errors = ['règles : ' + e.message]; }
+    if (!idx.length && regles.n) await chrome.storage.local.set({ idxDate: Date.now() });
+    return { n: idx.length + regles.n, listes: idx.length, regles: regles.n, pages: regles.pages, errors: errors.concat(regles.errors) };
   })();
   try { return await building; } finally { building = null; }
 }
 async function indexInfo() {
-  const { idxDate, idxErrors } = await chrome.storage.local.get(['idxDate', 'idxErrors']);
-  const idx = await loadIndex();
-  return { n: idx.length, date: idxDate || 0, errors: idxErrors || [], building: !!building };
+  const { idxDate, idxErrors, rulesInfo } = await chrome.storage.local.get(['idxDate', 'idxErrors', 'rulesInfo']);
+  await loadIndex();
+  const ri = rulesInfo || { pages: 0, errors: [] };
+  return { n: INDEX.length + RULES.length, listes: INDEX.length, regles: RULES.length, textes: TEXTS.length,
+    pages: ri.pages, date: idxDate || 0, errors: (idxErrors || []).concat(ri.errors || []), building: !!building, progres };
 }
 async function maybeRefresh() {
-  const { idxDate } = await chrome.storage.local.get('idxDate');
-  if (!idxDate || Date.now() - idxDate > 14 * 864e5) buildIndex();
+  const { idxDate, rulesInfo } = await chrome.storage.local.get(['idxDate', 'rulesInfo']);
+  if (!idxDate || !rulesInfo || Date.now() - idxDate > 14 * 864e5) buildIndex();
 }
 
 function search(q, cat) {
   const qn = norm(q);
   if (!qn || !INDEX) return [];
   const toks = qn.split(' ');
+  const garde = (c) => !cat || (GROUPES[cat] ? GROUPES[cat].includes(c) : c === cat);
   const out = [];
-  for (const it of INDEX) {
-    if (cat && it.c !== cat) continue;
-    let s = score(it.k, qn, toks);
-    const se = it.ke ? score(it.ke, qn, toks) - 8 : 0;
-    s = Math.max(s, se);
-    if (s > 0) out.push([s, it]);
+  for (const liste of [INDEX, RULES || []]) {
+    for (const it of liste) {
+      if (!garde(it.c)) continue;
+      let s = score(it.k, qn, toks);
+      const se = it.ke ? score(it.ke, qn, toks) - 8 : 0;
+      s = Math.max(s, se);
+      if (s <= 0) continue;
+      if (it.p) s -= 2; // à égalité, une fiche (sort, monstre…) passe avant une sous-partie de règle
+      out.push([s, it]);
+    }
   }
   out.sort((a, b) => b[0] - a[0] || a[1].n.length - b[1].n.length || a[1].n.localeCompare(b[1].n));
-  return out.slice(0, 40).map(([, it]) => ({ u: it.u, c: it.c, n: it.n, e: it.e }));
+  const res = out.slice(0, 40).map(([, it]) => ({ u: it.u, c: it.c, n: it.n, e: it.e, p: it.p || '', s: it.s || '' }));
+  // recherche dans le texte des règles (après les titres)
+  if (garde('Texte') && TEXTS && qn.length >= 3) {
+    const deja = new Set(res.map((r) => r.u));
+    const hits = [];
+    for (const x of TEXTS) {
+      if (!toks.every((t) => x.k.includes(t))) continue;
+      const sec = x.i >= 0 && RULES[x.i] ? RULES[x.i] : null;
+      const u = x.u;
+      if (deja.has(u) || (sec && deja.has(sec.u))) continue; // titre déjà dans les résultats
+      if (sec) deja.add(sec.u);
+      hits.push({ u, c: 'Texte', n: sec ? sec.n : 'Règles', e: '', p: sec ? sec.p : '', s: extrait(x.t, toks) });
+      if (hits.length >= 12) break;
+    }
+    res.push(...hits);
+  }
+  return res;
+}
+// extrait du paragraphe autour du premier mot cherché
+function extrait(t, toks) {
+  const k = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  let i = -1;
+  for (const tok of toks) { const j = k.indexOf(tok); if (j >= 0 && (i < 0 || j < i)) i = j; }
+  if (i < 0) i = 0;
+  const debut = Math.max(0, i - 50), fin = Math.min(t.length, i + 130);
+  return (debut > 0 ? '…' : '') + t.slice(debut, fin).trim() + (fin < t.length ? '…' : '');
 }
 function score(k, qn, toks) {
   if (!k) return 0;

@@ -146,7 +146,11 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
 .res{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:6px 6px;text-align:left;border-bottom:1px solid var(--rule);color:var(--fg)}
 .res:active{background:var(--gold-soft)}
 .res .n{font-weight:700;font-size:1.2rem}
+.res .rb{min-width:0}
 .res .e{font-style:italic;color:var(--muted);font-size:.92rem}
+.res .s{color:var(--fg);opacity:.85;font-size:.95rem;margin-top:2px;line-height:1.3}
+.res.txt .n{font-weight:400;font-family:var(--disp);color:var(--gold)}
+.res.txt .s{font-style:italic}
 .res .c{margin-left:auto;font-family:var(--disp);color:var(--gold);font-size:1rem;flex:none}
 .res.web .n{font-weight:400;font-family:var(--disp);color:var(--gold-hi)}
 .res.web{border-bottom:0;border-top:1px dashed var(--gold-dim);margin-top:4px}
@@ -481,7 +485,7 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
   });
 
   /* ---------- Recherche AideDD ---------- */
-  const CHIPS = [['', 'Tout'], ['Sort', 'Sorts'], ['Monstre', 'Monstres'], ['Objet', 'Objets & potions'], ['Don', 'Dons'], ['Règle', 'Règles']];
+  const CHIPS = [['', 'Tout'], ['Sort', 'Sorts'], ['Monstre', 'Monstres'], ['Objet', 'Objets & potions'], ['Don', 'Dons'], ['Règle', 'Règles'], ['Équipement', 'Armes & équipement']];
   let cat = '', timer = null, kbdOn = true;
   chipsEl.innerHTML = CHIPS.map(([v, l]) => `<button class="chip${v === cat ? ' on' : ''}" data-c="${v}">${l}</button>`).join('');
   chipsEl.addEventListener('click', (e) => {
@@ -521,19 +525,24 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
     if (!r || r.error) { resEl.innerHTML = '<div class="aide">Extension rechargée : rafraîchis la page.</div>'; return; }
     const info = r.info;
     const ago = info.date ? Math.round((Date.now() - info.date) / 864e5) : null;
+    const lecture = info.building && info.progres ? ` — lecture des règles : ${info.progres.faits}/${info.progres.total} pages` : '';
     stEl.innerHTML = info.n
-      ? `Index : ${info.n.toLocaleString('fr')} entrées, ${ago === 0 ? "à jour d'aujourd'hui" : `vieux de ${ago} j`} <button data-a="rebuild">Mettre à jour</button>`
-      : `${info.building ? 'Construction de l’index…' : 'Index vide.'} <button data-a="rebuild">Construire l’index</button>`;
-    if (!text) { resEl.innerHTML = '<div class="aide">Quelques lettres suffisent : « boule », « gobelin », « potion soins »…</div>'; return; }
-    let html = r.results.map((it) =>
-      `<button class="res" data-u="${esc(it.u)}"><div><div class="n">${esc(it.n)}</div>${it.e ? `<div class="e">${esc(it.e)}</div>` : ''}</div><span class="c">${esc(it.c)}</span></button>`).join('');
+      ? `Index : ${info.n.toLocaleString('fr')} entrées (${info.regles.toLocaleString('fr')} dans les règles 2024), ${ago === 0 ? "à jour d'aujourd'hui" : `vieux de ${ago} j`}${lecture} <button data-a="rebuild">Mettre à jour</button>`
+      : `${info.building ? 'Construction de l’index…' + lecture : 'Index vide.'} <button data-a="rebuild">Construire l’index</button>`;
+    if (info.building && info.progres) setTimeout(() => { if (sov.classList.contains('on')) doSearch(); }, 1500);
+    if (!text) { resEl.innerHTML = '<div class="aide">Quelques lettres suffisent : « boule », « gobelin », « arc long », « en péril », « abri »…</div>'; return; }
+    const ETIQ = { Texte: 'Dans le texte' };
+    let html = r.results.map((it) => {
+      const sous = [it.p, it.e].filter(Boolean).join(' · ');
+      return `<button class="res${it.c === 'Texte' ? ' txt' : ''}" data-u="${esc(it.u)}"><div class="rb"><div class="n">${esc(it.n)}</div>${sous ? `<div class="e">${esc(sous)}</div>` : ''}${it.s ? `<div class="s">${esc(it.s)}</div>` : ''}</div><span class="c">${esc(ETIQ[it.c] || it.c)}</span></button>`;
+    }).join('');
     if (!r.results.length) {
       const s = slugify(text);
       html += '<div class="aide">Rien dans l’index. Essais directs :</div>' + [['spell', 'Sort'], ['monster', 'Monstre'], ['magic-item', 'Objet'], ['feat', 'Don']]
         .filter(([, c]) => !cat || cat === c).map(([seg, c]) =>
-          `<button class="res" data-u="https://www.aidedd.org/${seg}/fr/${s}"><div><div class="n">${esc(text)}</div><div class="e">aidedd.org/${seg}/fr/${esc(s)}</div></div><span class="c">${c} ?</span></button>`).join('');
+          `<button class="res" data-u="https://www.aidedd.org/${seg}/fr/${s}"><div class="rb"><div class="n">${esc(text)}</div><div class="e">aidedd.org/${seg}/fr/${esc(s)}</div></div><span class="c">${c} ?</span></button>`).join('');
+      html += `<button class="res web" data-u="https://duckduckgo.com/?q=${encodeURIComponent('site:aidedd.org ' + text)}" data-web="1"><div class="rb"><div class="n">Chercher « ${esc(text)} » sur tout AideDD</div><div class="e">recherche web, en dernier recours</div></div></button>`;
     }
-    html += `<button class="res web" data-u="https://duckduckgo.com/?q=${encodeURIComponent('site:aidedd.org ' + text)}" data-web="1"><div><div class="n">Chercher « ${esc(text)} » sur tout AideDD</div><div class="e">règles, chapitres, tout le site — recherche web</div></div></button>`;
     resEl.innerHTML = html; resEl.scrollTop = 0;
   }
   resEl.addEventListener('click', (e) => {
