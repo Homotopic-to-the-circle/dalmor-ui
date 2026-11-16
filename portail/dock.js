@@ -283,10 +283,7 @@ h2::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;backgr
   const isDalmorPage = () => document.documentElement.hasAttribute('data-theme') && /github\.io$|^localhost$/.test(location.hostname);
   const isExtPage = () => location.protocol === 'chrome-extension:';
   const dalmorKey = () => 'dalmor-theme:' + (location.pathname.split('/')[1] || 'racine');
-  const effectif = (c) => {
-    if (c === 'heure') { const h = new Date().getHours(); return h >= 19 || h < 7 ? 'nuit' : 'jour'; }
-    return c === 'nuit' ? 'nuit' : 'jour';
-  };
+  const effectif = (c) => (c === 'nuit' ? 'nuit' : 'jour');
   function pickTheme() {
     let t;
     if (isDalmorPage()) t = document.documentElement.getAttribute('data-theme') === 'nuit' ? 'nuit' : 'jour';

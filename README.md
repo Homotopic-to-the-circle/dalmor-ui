@@ -13,7 +13,7 @@ Page de démonstration : https://homotopic-to-the-circle.github.io/dalmor-ui/
 
 ## Comment ça marche
 
-- **Chaque app a son propre thème**, rangé dans `localStorage['dalmor-theme:<app>']` (`<app>` = 1er segment du chemin : `DnD_MJ`, `DnD_Character`, `Sonerezh`). Valeurs : `jour`, `nuit` (ou `heure`, nuit de 19 h à 7 h, via l'API). Changer une app ne touche pas les autres ; les onglets d'une même app suivent.
+- **Chaque app a son propre thème**, rangé dans `localStorage['dalmor-theme:<app>']` (`<app>` = 1er segment du chemin : `DnD_MJ`, `DnD_Character`, `Sonerezh`). Valeurs : `jour` ou `nuit`. Changer une app ne touche pas les autres ; les onglets d'une même app suivent.
 - **Le thème se change uniquement depuis le d20 flottant du Portail** (bouton lune / soleil de son panneau). Il change la page ouverte **et** le panneau du d20. **Aucun bouton de thème dans les apps** : ne pas en ajouter.
 - Sans choix enregistré, chaque app garde son thème par défaut (`<html data-theme-defaut="nuit">` pour Sonerezh, jour sinon). Sur les téléphones des joueurs (sans Portail), Fiches reste donc en jour.
 - `theme.js` pose `<html data-theme="jour|nuit">` (thème affiché) et `data-theme-choix` (choix brut) ; `theme.css` définit les variables pour chaque valeur.

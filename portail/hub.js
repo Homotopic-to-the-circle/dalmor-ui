@@ -12,7 +12,6 @@
   $('b-opt').innerHTML = I('gear') + 'Réglages';
 
   function setTheme(t) {
-    if (t === 'heure') { const h = new Date().getHours(); t = h >= 19 || h < 7 ? 'nuit' : 'jour'; }
     if (t !== 'nuit') t = 'jour';
     if (document.body.className !== t) {
       document.body.className = t;

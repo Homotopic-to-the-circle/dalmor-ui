@@ -4,7 +4,7 @@
      <link rel="stylesheet" href="/dalmor-ui/theme.css">
 
    - Chaque app a SON thème : localStorage['dalmor-theme:<app>'], où <app> est le 1er segment
-     du chemin (DnD_MJ, DnD_Character, Sonerezh…). Valeurs : 'jour' | 'nuit' | 'heure'.
+     du chemin (DnD_MJ, DnD_Character, Sonerezh…). Valeurs : 'jour' | 'nuit'.
      Changer le thème d'une app ne touche pas les autres. Les onglets de la même app suivent.
    - Le thème se change UNIQUEMENT depuis le d20 flottant du Portail (extension Chromium) :
      il écrit cette clé puis envoie l'événement window 'dalmor-theme-sync'. Pas de bouton dans les apps.
@@ -13,13 +13,25 @@
    - API : Dalmor.theme.get(), .set('nuit'), .effectif(), .cle ; événement window 'dalmor-theme'
      (detail = thème appliqué) à chaque changement. */
 (function () {
-  var H = document.documentElement, VALEURS = ['jour', 'nuit', 'heure'];
+  var H = document.documentElement, VALEURS = ['jour', 'nuit'];
   var app = (location.pathname.split('/')[1] || 'racine');
   var K = 'dalmor-theme:' + app;
-  try { localStorage.removeItem('dalmor-theme'); } catch (e) {} // ancienne clé commune (v1)
+  var ANCIENNE = 'dalmor-theme'; // ancienne clé commune (v1), encore écrite par un Portail ≤ v1.5
+  // Un Portail ≤ v1.5 écrit l'ancienne clé commune puis envoie 'dalmor-theme-sync' à l'onglet ouvert :
+  // on la reprend pour CETTE app seulement, puis on l'efface (les autres apps ne sont pas touchées).
+  function reprendAncienne() {
+    try {
+      var v = localStorage.getItem(ANCIENNE);
+      if (v !== null) {
+        localStorage.removeItem(ANCIENNE);
+        if (v === 'heure') v = H.getAttribute('data-theme') === 'nuit' ? 'jour' : 'nuit';
+        if (VALEURS.indexOf(v) >= 0) localStorage.setItem(K, v);
+      }
+    } catch (e) {}
+  }
+  try { localStorage.removeItem(ANCIENNE); } catch (e) {}
   function lire() { try { var v = localStorage.getItem(K); return VALEURS.indexOf(v) >= 0 ? v : null; } catch (e) { return null; } }
   function effectif(choix) {
-    if (choix === 'heure') { var h = new Date().getHours(); return h >= 19 || h < 7 ? 'nuit' : 'jour'; }
     if (choix === 'jour' || choix === 'nuit') return choix;
     return H.getAttribute('data-theme-defaut') === 'nuit' ? 'nuit' : 'jour';
   }
@@ -47,9 +59,8 @@
   applique(false);
   document.addEventListener('DOMContentLoaded', function () { applique(false); metaCouleur(dernier); });
   window.addEventListener('storage', function (e) { if (e.key === K || e.key === null) applique(true); });
-  window.addEventListener('dalmor-theme-sync', function () { applique(true); });
+  window.addEventListener('dalmor-theme-sync', function () { reprendAncienne(); applique(true); });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) applique(true); });
-  setInterval(function () { if (lire() === 'heure') applique(true); }, 60000);
 
   window.Dalmor = window.Dalmor || {};
   window.Dalmor.theme = { cle: K, get: lire, effectif: function () { return effectif(lire()); }, set: set, applique: applique };

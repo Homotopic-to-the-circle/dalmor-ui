@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Portail MJ",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Navigation tactile entre les apps D&D (MJ, Sonerezh, Fiches, AideDD) + recherche AideDD 5.5.",
   "permissions": [
     "tabs",
