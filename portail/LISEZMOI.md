@@ -10,6 +10,9 @@ Mise à jour depuis une version précédente : remplacer le contenu du dossier, 
 5. Paramètres → *Au démarrage* → « Ouvrir la page Nouvel onglet » : Chromium démarre sur le Portail.
 6. Option : lancer en plein écran direct : `chromium --start-fullscreen` (raccourci KDE).
 
+## Nom et logo dans Kubuntu
+Pour que Chromium s'appelle « Portail MJ » avec le logo du sceau (menu, barre des tâches) : voir [`kubuntu/LISEZMOI.md`](kubuntu/LISEZMOI.md) (`./installer.sh`).
+
 ## Usage
 - **Dé doré flottant** (bord de l'écran, sur toutes les pages) :
   - tap → panneau : apps, onglets ouverts, retour/suivant, recharger, plein écran, fermer l'onglet ;
